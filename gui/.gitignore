@@ -1,0 +1,14 @@
+# Rust-specific
+/target/
+
+# IDE-specific (examples)
+.idea/
+.vscode/
+
+# Operating System specific (examples)
+.DS_Store
+Thumbs.db
+
+# Other common ignores
+*.log
+*.bak

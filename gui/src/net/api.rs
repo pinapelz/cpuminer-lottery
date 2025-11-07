@@ -59,11 +59,59 @@ fn parse_summary_data(raw_summary_message: &str) -> APISummary {
     summary
 }
 
+#[derive(Default)]
+pub struct ThreadStat{
+    cpu_id: u32,
+    hashrate: f64,
+    units: String
+}
+#[derive(Default)]
+pub struct APIThreads{
+    thread_stats: Vec<ThreadStat>
+}
+
+pub fn unit_multiplier(unit: &str) -> f64 {
+    match unit {
+        "k/s" => 1e3,
+        "M/s" => 1e6,
+        "G/s" => 1e9,
+        "T/s" => 1e12,
+        "P/s" => 1e15,
+        "E/s" => 1e18,
+        "Z/s" => 1e21,
+        "Y/s" => 1e24,
+        _   => 1.0,
+    }
+}
+
+fn parse_thread_data(raw_threads_message: &str) -> APIThreads{
+    let mut new_threads_report = APIThreads::default();
+    let stats = raw_threads_message.split("|");
+    for stat in stats{
+        let (cpu_stat, hashrate_stat) = stat.split_once(";").unwrap_or(("", ""));
+        let (_, cpu_id) = cpu_stat.split_once("=").unwrap_or(("","0"));
+        let (units, hashrate) = hashrate_stat.split_once("=").unwrap_or(("H/s","0.0"));
+        let cpu_id_u32: u32 = cpu_id.parse().unwrap();
+        let hashrate_f64: f64 = hashrate.parse().unwrap();
+        new_threads_report.thread_stats.push(ThreadStat{cpu_id: cpu_id_u32, hashrate: hashrate_f64, units: units.to_string()});
+    }
+    new_threads_report
+}
+
 pub fn get_summary() -> Result<APISummary, Box<dyn std::error::Error>> {
     let mut stream = TcpStream::connect("127.0.0.1:4048")?;
     stream.write_all(b"summary|")?;
     let mut response = String::new();
     stream.read_to_string(&mut response)?;
     let summary = parse_summary_data(&response);
+    Ok(summary)
+}
+
+pub fn get_threads() -> Result<APIThreads, Box<dyn std::error::Error>> {
+    let mut stream = TcpStream::connect("127.0.0.1:4048")?;
+    stream.write_all(b"threads|")?;
+    let mut response = String::new();
+    stream.read_to_string(&mut response)?;
+    let summary = parse_thread_data(&response);
     Ok(summary)
 }

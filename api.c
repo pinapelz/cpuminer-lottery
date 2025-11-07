@@ -153,12 +153,12 @@ static char *getsummary( char *params )
 
    // if diff is integer don't display decimals
    if ( diff == trunc( diff ) )
-       sprintf( diff_str, "%.0f", diff);
+       snprintf( diff_str, sizeof(diff_str), "%.0f", diff);
    else
-       sprintf( diff_str, "%.6f", diff);
+       snprintf( diff_str,sizeof(diff_str), "%.6f", diff);
 
    *buffer = '\0';
-   sprintf( buffer,
+   snprintf( buffer, MYBUFSIZ,
 	  "NAME=%s;VER=%s;API=%s;"
           "ALGO=%s;CPUS=%d;URL=%s;"
           "HS=%.2f;KHS=%.2f;ACC=%d;REJ=%d;SOL=%d;"
@@ -729,4 +729,3 @@ void *api_thread(void *userdata)
 
 	return NULL;
 }
-
